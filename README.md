@@ -44,10 +44,18 @@ docker-compose restart
 
 ### Development
 
-1. Create branch: `git checkout -b feature/name`
-2. Test within Docker: `docker-compose up -w`
-3. Commit changes: `git commit -am "Message"`
-4. Push changes: `git push origin feature/name`
-5. Create pull request
+```bash
+# 1. Create branch: 
+git checkout -b feature/name
 
+# 2. Test within Docker: 
+docker-compose up -w
 
+# 3. Commit changes: 
+git commit -am "Message"
+
+# 4. Push changes: 
+git push origin feature/name
+
+# 5. Create pull request
+```
