@@ -14,7 +14,7 @@ WORKDIR /app
 FROM base AS client-base
 COPY client/package.json client/package-lock.json ./
 RUN --mount=type=cache,id=npm,target=/root/.npm npm ci
-COPY client/index.html client/vite.config.js ./
+COPY client/index.html client/vite.config.ts client/tsconfig.json client/tailwind.config.js client/tsconfig.app.json client/tsconfig.node.json client/tsconfig.json ./
 COPY client/public ./public
 COPY client/src ./src
 
@@ -60,7 +60,7 @@ COPY backend/package.json backend/package-lock.json ./
 RUN --mount=type=cache,id=npm,target=/root/.npm npm ci --only=production
 
 COPY backend/src ./src
-# COPY --from=client-build /app/dist ./src/static
+COPY --from=client-build /app/dist ./src/static
 
 EXPOSE 3000
 CMD ["npm", "run", "start"]
