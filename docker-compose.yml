@@ -1,6 +1,8 @@
+#######################################################
+# THIS FILE IS JUST FOR DEVELOPMENT PURPOSES ONLY!!!! #
+#######################################################
 version: '3.8'
 services:
-
 
   proxy:
     image: traefik:v2.11
@@ -21,21 +23,20 @@ services:
       target: client-dev
     develop:
       watch:
-        - path: ./client
-          action: sync
-          target: /app
-          ignore:
-            - node_modules/
-            - dist/
-          
         - path: ./client/package.json
           action: rebuild
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
     volumes:
-      - ./client:/app
-      - /app/node_modules
+      - ./client/src:/app/src
+      - ./client/public:/app/public
+      - ./client/index.html:/app/index.html
+      - ./client/vite.config.ts:/app/vite.config.ts
+      - ./client/tailwind.config.js:/app/tailwind.config.js
+      - ./client/tsconfig.json:/app/tsconfig.json
+      - ./client/tsconfig.app.json:/app/tsconfig.app.json
+      - ./client/tsconfig.node.json:/app/tsconfig.node.json
 
     ports:
       - 5173:5173
@@ -61,16 +62,11 @@ services:
       # MYSQL_DB: todos
     develop:
       watch:
-        - path: ./backend/src
-          action: sync
-          target: /app/src
         - path: ./backend/package.json
           action: rebuild
 
-
-    ####################################################
-    # THESE ARE JUST FOR DEVELOPMENT PURPOSES ONLY!!!! #
-    ####################################################
+    volumes:
+      - ./backend/src:/app/src
 
     ports:
       - 3000:3000

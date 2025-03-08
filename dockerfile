@@ -14,9 +14,6 @@ WORKDIR /app
 FROM base AS client-base
 COPY client/package.json client/package-lock.json ./
 RUN --mount=type=cache,id=npm,target=/root/.npm npm ci
-COPY client/index.html client/vite.config.ts client/tsconfig.json client/tailwind.config.js client/tsconfig.app.json client/tsconfig.node.json client/tsconfig.json ./
-COPY client/public ./public
-COPY client/src ./src
 
 ###################################################
 # Stage: client-dev
@@ -29,6 +26,10 @@ CMD ["npm", "run", "dev"]
 # Stage: client-build
 ###################################################
 FROM client-base AS client-build
+COPY client/index.html client/vite.config.ts client/tsconfig.json client/tailwind.config.js client/tsconfig.app.json client/tsconfig.node.json client/tsconfig.json ./
+COPY client/public ./public
+COPY client/src ./src
+
 RUN npm run build
 
 
