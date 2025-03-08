@@ -4,11 +4,28 @@ import react from '@vitejs/plugin-react'
 // paths aliass
 import * as path from "path"
 import tailwindcss from "@tailwindcss/vite"
+const ReactCompilerConfig = {
+  // Enable React Compiler
+  enabled: true,
+  // Optional: configure development mode behavior
+  development: {
+    // Keep original component names for better debugging
+    keepOriginalFunctionNames: true
+  }
+};
 
 // https://vite.dev/config/
 export default defineConfig({
   base: "/",
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react({
+      babel: {
+        plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
+      },
+    }),
+    tailwindcss(),
+  ],
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -29,6 +46,9 @@ export default defineConfig({
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
+    },
+    watch: {
+      usePolling: true
     },
     origin: "http://localhost:5173",
   },
