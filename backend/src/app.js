@@ -8,7 +8,18 @@ app = express();
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
+
+
+const courseRoutes = require("./routes/courses");
+const videoRoutes = require("./routes/videos");
+const studentRoutes = require("./routes/students");
+
+app.use("/courses", courseRoutes);
+app.use("/videos", videoRoutes);
+app.use("/students", studentRoutes);
+
 mongoose
+// url: write localhost 
   .connect(process.env.MONGO_URI, { 
     useNewUrlParser: true, 
     useUnifiedTopology: true })
