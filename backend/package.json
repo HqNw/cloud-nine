@@ -1,0 +1,24 @@
+{
+  "name": "project_backend",
+  "version": "0.0.1",
+  "description": "",
+  "license": "ISC",
+  "author": "Ahmed, Aya",
+  "type": "commonjs",
+  "main": "./src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/app.js",
+    "dev": "nodemon --trace-uncaught"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }, 
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "nodemon": "^3.1.7"
+  }
+
+}
