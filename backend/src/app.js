@@ -1,6 +1,21 @@
-const express = require('express')
+const express = require('express');
+const mongoose= require('mongoose');
+const dotenv = require('dotenv');
+const cors = require('cors');
+
 
 app = express();
+app.use(express.json());
+app.use("/uploads", express.static("uploads"));
+
+mongoose
+  .connect(process.env.MONGO_URI, { 
+    useNewUrlParser: true, 
+    useUnifiedTopology: true })
+  .then(() => console.log("Database connected"))
+  .catch((err) => console.error("Database connection error:", err));
+
+
 
 app.use((req, res, next) => {
   if (req.url.startsWith('/api')) {
@@ -8,10 +23,10 @@ app.use((req, res, next) => {
   }
   next();
 });
-
+ 
 
 app.get("/", (req, res) => {
-  res.send("Hello World");
+  res.send("running");
 });
 
 app.listen(3000, () => {
