@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // or "mysql", "sqlite", etc. depending on your database
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  password       String
+  name           String?
+  role             Role         @default(STUDENT)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdLessons   Lesson[]     // Lessons created by this user (as teacher)
+  userLessons      UserLesson[] // Lessons this user has access to (as student)
+  // @@unique([email, role])
+}
+
+model Lesson {
+  id          String         @id @default(uuid())
+  title       String
+  description String?
+  content     String
+  videoUrl    String?     // Optional URL to video content
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  // Relations
+  teacherId   String
+  teacher     User        @relation(fields: [teacherId], references: [id])
+  students    UserLesson[] // Students who have access to this lesson
+}
+
+model UserLesson {
+  id        String      @id @default(uuid())
+  userId    String
+  lessonId  String
+  watched   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  // Composite unique constraint to prevent duplicates
+  @@unique([userId, lessonId])
+}
