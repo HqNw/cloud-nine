@@ -17,24 +17,43 @@ services:
 ################  DATABASE  ################
 ############################################
 
-  mongodb:
-    image: mongo
-    container_name: mongodb
-    ports:
-      - 27017:27017
+  postgres:
+    image: postgres:16-alpine3.20
+    container_name: postgres_cloud_nine
+    restart: unless-stopped
     environment:
-      - MONGO_INITDB_DATABASE=course_db
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=admin
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_password
+      POSTGRES_DB: cloud_nine
+    ports:
+      - "5432:5432"
     volumes:
-      # seeding scripts
-      - ./mongo-entrypoint:/docker-entrypoint-initdb.d
-      # named volumes
-      - ./mongo_db:/data/db
-      - ./mongoconfig:/data/configdb
-
+      - ./postgres_data:/var/lib/postgresql/data
     networks:
-      - mongo_net
+      - postgres_net
+
+  # Add to volumes section
+
+  # mongo-init:
+  #   image: mongo:latest
+  #   restart: "no"
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #   command: >
+  #     mongosh --host mongodb --port 27017 -u admin -p admin --authenticationDatabase admin --eval '
+  #       if (!rs.status().ok) {
+  #         rs.initiate({
+  #           _id: "rs0",
+  #           members: [{ _id: 0, host: "mongodb:27017" }]
+  #         });
+  #         print("Replica set initialized");
+  #       } else {
+  #         print("Replica set already initialized");
+  #       }
+  #     '
+  #   networks:
+  #     - postgres_net
 
 
 ############################################
@@ -69,6 +88,8 @@ services:
       traefik.http.routers.client.rule: Host(`localhost`)
       traefik.http.services.client.loadbalancer.server.port: 5174
 
+    networks:
+      - backend_net
 
 ###################################################
 ################  BACKEND STAGES  #################
@@ -77,6 +98,11 @@ services:
     build:
       context: ./
       target: backend-dev
+    environment:
+    # Add the DATABASE_URL environment variable
+      DATABASE_URL: "postgresql://admin:admin_password@postgres:5432/cloud_nine"
+      NODE_ENV: "development"
+
 
     # choose a database
     # environment:
@@ -91,10 +117,21 @@ services:
 
     volumes:
       - ./backend/src:/app/src
+      - ./backend/uploads:/app/uploads
 
     ports:
       - 3000:3000
-
+    command: >
+      sh -c "
+        npx prisma generate && 
+        if [ ! -d 'prisma/migrations' ] || [ -z \"$(ls -A prisma/migrations 2>/dev/null)\" ]; then
+          npx prisma migrate dev &&
+          npx prisma db push
+        else
+          npx prisma migrate deploy
+        fi &&
+        npm run dev
+      "
     labels:
       traefik.http.routers.backend.rule: Host(`localhost`) && PathPrefix(`/api`)
       traefik.http.services.backend.loadbalancer.server.port: 3000
@@ -103,12 +140,14 @@ services:
       # traefik.http.routers.backend.middlewares: strip-api-prefix
 
     networks:
-      - mongo_net
-
+      - postgres_net
+      - backend_net
     depends_on:
-      - mongodb
+      - postgres
 
 
 networks:
-  mongo_net:
+  postgres_net:
+    driver: bridge
+  backend_net:
     driver: bridge

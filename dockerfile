@@ -47,6 +47,7 @@ RUN --mount=type=cache,id=npm,target=/root/.npm npm ci
 
 # COPY backend/spec ./spec
 COPY backend/src ./src
+COPY backend/prisma ./prisma
 
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
