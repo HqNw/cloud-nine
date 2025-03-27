@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "@/pages/login";
 import { ThemeProvider } from "@/components/theme-provider"
 import { UserProvider } from "@/contexts/user-context";
@@ -11,8 +11,8 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/dashboard" element={<DashboardRouter />} />
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<DashboardRouter />} />
+            {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
           </Routes>
         </BrowserRouter>
       </UserProvider>

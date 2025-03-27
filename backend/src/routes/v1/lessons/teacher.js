@@ -118,28 +118,17 @@ teacher_lessons_router.delete('/:id', teacherAuth, async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Check if lesson exists and belongs to teacher
-    const lesson = await prisma.lesson.findUnique({
-      where: { id }
-    });
+    const lesson = lessonService.getLessonById(id);
+
+    // if (lesson.teacherId !== req.user.id) {
+    //   return res.status(403).json({ message: 'You can only delete your own lessons' });
+    // }
+    
+    lessonService.deleteLesson(id);
     
     if (!lesson) {
       return res.status(404).json({ message: 'Lesson not found' });
     }
-    
-    if (lesson.teacherId !== req.user.id) {
-      return res.status(403).json({ message: 'You can only delete your own lessons' });
-    }
-    
-    // Delete all student access to this lesson
-    await prisma.userLesson.deleteMany({
-      where: { lessonId: id }
-    });
-    
-    // Delete the lesson
-    await prisma.lesson.delete({
-      where: { id }
-    });
     
     res.status(200).json({ message: 'Lesson deleted successfully' });
   } catch (error) {
@@ -148,105 +137,5 @@ teacher_lessons_router.delete('/:id', teacherAuth, async (req, res) => {
   }
 });
 
-// Grant student access to a lesson
-teacher_lessons_router.post('/:id/access', teacherAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { studentId } = req.body;
-    
-    if (!studentId) {
-      return res.status(400).json({ message: 'Student ID is required' });
-    }
-    
-    // Check if lesson exists and belongs to teacher
-    const lesson = await prisma.lesson.findUnique({
-      where: { id }
-    });
-    
-    if (!lesson) {
-      return res.status(404).json({ message: 'Lesson not found' });
-    }
-    
-    if (lesson.teacherId !== req.user.id) {
-      return res.status(403).json({ message: 'You can only grant access to your own lessons' });
-    }
-    
-    // Check if student exists
-    const student = await prisma.user.findUnique({
-      where: { id: studentId }
-    });
-    
-    if (!student || student.role !== 'STUDENT') {
-      return res.status(404).json({ message: 'Student not found' });
-    }
-    
-    // Check if access already exists
-    const existingAccess = await prisma.userLesson.findUnique({
-      where: {
-        userId_lessonId: {
-          userId: studentId,
-          lessonId: id
-        }
-      }
-    });
-    
-    if (existingAccess) {
-      return res.status(409).json({ message: 'Student already has access to this lesson' });
-    }
-    
-    // Grant access
-    await prisma.userLesson.create({
-      data: {
-        userId: studentId,
-        lessonId: id
-      }
-    });
-    
-    res.status(200).json({ message: 'Access granted successfully' });
-  } catch (error) {
-    console.error('Grant access error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// Revoke student access to a lesson
-teacher_lessons_router.delete('/:lessonId/access/:studentId', teacherAuth, async (req, res) => {
-  try {
-    const { lessonId, studentId } = req.params;
-    
-    // Check if lesson exists and belongs to teacher
-    const lesson = await prisma.lesson.findUnique({
-      where: { id: lessonId }
-    });
-    
-    if (!lesson) {
-      return res.status(404).json({ message: 'Lesson not found' });
-    }
-    
-    if (lesson.teacherId !== req.user.id) {
-      return res.status(403).json({ message: 'You can only revoke access to your own lessons' });
-    }
-    
-    // Delete access
-    await prisma.userLesson.delete({
-      where: {
-        userId_lessonId: {
-          userId: studentId,
-          lessonId: lessonId
-        }
-      }
-    });
-    
-    res.status(200).json({ message: 'Access revoked successfully' });
-  } catch (error) {
-    console.error('Revoke access error:', error);
-    
-    if (error.code === 'P2025') {
-      return res.status(404).json({ message: 'Access not found' });
-    }
-    
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
 
 export default teacher_lessons_router;

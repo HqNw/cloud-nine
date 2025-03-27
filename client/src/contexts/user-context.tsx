@@ -5,7 +5,8 @@ export type UserType = "student" | "teacher" | null;
 interface UserContextType {
   userType: UserType;
   isAuthenticated: boolean;
-  setUserData: (type: UserType, authenticated: boolean) => void;
+  token?: string;
+  setUserData: (type: UserType, authenticated: boolean, token: string) => void;
   logout: () => void;
 }
 
@@ -19,13 +20,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [userType, setUserType] = useState<UserType>(storedUserType);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(storedAuth);
 
-  const setUserData = (type: UserType, authenticated: boolean) => {
+  const [_token, setToken] = useState<string | null>(localStorage.getItem("token"));
+
+  const setUserData = (type: UserType, authenticated: boolean, token: string) => {
     setUserType(type);
     setIsAuthenticated(authenticated);
+    setToken(token);
     
     // Store in localStorage for persistence
     localStorage.setItem("userType", type || "");
     localStorage.setItem("isAuthenticated", authenticated.toString());
+    localStorage.setItem("token", token || "");
   };
 
   const logout = () => {
@@ -33,6 +38,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
     localStorage.removeItem("userType");
     localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("token");
   };
 
   return (

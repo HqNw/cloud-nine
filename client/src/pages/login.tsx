@@ -10,7 +10,11 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { BookOpen, GraduationCap, Moon, Sun } from "lucide-react"
-import { useUser } from "../contexts/user-context"
+import { useUser } from "@/contexts/user-context"
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
+import api from "@/lib/api";
+
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -21,7 +25,7 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard")
+      navigate("/")
     }
   }, [isAuthenticated, navigate])
 
@@ -46,13 +50,47 @@ export default function LoginPage() {
     event.preventDefault()
     setIsLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      // Set user data and redirect to dashboard
-      setUserData(userType, true)
-      navigate("/dashboard")
-    }, 1500)
+    try {
+      // Get form data
+      const emailId = userType === "student" ? "student-email" : "teacher-email";
+      const passwordId = userType === "student" ? "student-password" : "teacher-password";
+
+      const email = (document.getElementById(emailId) as HTMLInputElement).value;
+      const password = (document.getElementById(passwordId) as HTMLInputElement).value;
+
+      let res;
+      try {
+        res = await api.post("/v1/auth/login", {
+          email,
+          password,
+          role: userType
+        });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        if (error.response && error.response.status === 401) {
+          return toast.error(error.response.data.message);
+        }
+        if (error.response && error.response.status === 400) {
+          return toast.error(error.response.data.message);
+        }
+
+        throw error; // Rethrow other errors to be caught by the outer catch
+      }
+
+      if (res.status !== 200) {
+        toast.error(res.data.message);
+        return;
+      }
+
+      setUserData(userType, true, res.data.token);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login error:", error);
+      // Handle error (show message to user)
+      toast.error(`there was an error logging in . Please try again: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -273,6 +311,12 @@ export default function LoginPage() {
           </div>
         </CardFooter>
       </Card>
+      <Toaster 
+        position="top-right"
+        expand={false}
+        closeButton
+        visibleToasts={5}
+      />
     </div>
   )
 }
