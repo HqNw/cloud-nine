@@ -145,21 +145,7 @@ services:
     depends_on:
       - postgres
   
-  
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./hqnw.live.pem:/etc/nginx/ssl/hqnw.live.pem:ro
-      - ./hqnw.live.key:/etc/nginx/ssl/hqnw.live.key:ro
-    depends_on:
-      - client
-      - backend
-    networks:
-      - postgres_net
+
 
 networks:
   postgres_net:
