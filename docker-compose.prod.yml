@@ -42,6 +42,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Running database migrations...' &&
+        npx prisma migrate deploy &&
+        echo 'Migrations completed! Starting server...' &&
+        node src/app.js
+      "
 
   nginx:
     container_name: nginx
