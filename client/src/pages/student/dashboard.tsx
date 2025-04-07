@@ -5,7 +5,6 @@ import { LessonGrid } from "@/components/dashboard/LessonGrid";
 import { VideoPlayer } from "@/components/dashboard/VideoPlayer";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 
 interface Teacher {
   id: string;
@@ -40,6 +39,7 @@ export default function StudentDashboard() {
       }));
       setLessons(updatedLessons || []);
       setLoading(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setLoading(false);
       if (error.response && error.response.status === 401) {

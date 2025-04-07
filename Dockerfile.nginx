@@ -1,0 +1,47 @@
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# Base image optimizations
+RUN apk update && \
+    apk add --no-cache curl bash && \
+    npm install -g npm@latest
+
+###################################################
+# Frontend Stages
+###################################################
+
+FROM base AS client-base
+WORKDIR /app
+COPY client/package.json client/package-lock.json ./
+RUN npm ci
+
+FROM client-base AS client-build
+COPY client/index.html client/vite.config.ts client/tsconfig.json client/tailwind.config.js client/tsconfig.app.json client/tsconfig.node.json ./
+COPY client/public ./public
+COPY client/src ./src
+RUN npm run build
+
+
+
+FROM nginx:alpine
+
+# Copy Nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Create SSL directory
+RUN mkdir -p /etc/nginx/ssl
+
+# Copy SSL certificates
+COPY hqnw.live.pem /etc/nginx/ssl/
+COPY hqnw.live.key /etc/nginx/ssl/
+
+# Remove default nginx static assets
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy static assets from client build
+COPY --from=client-build /app/dist /usr/share/nginx/html
+
+# Expose ports
+EXPOSE 80 443
+
+CMD ["nginx", "-g", "daemon off;"]

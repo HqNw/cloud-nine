@@ -83,7 +83,7 @@ export default function LoginPage() {
       }
 
       setUserData(userType, true, res.data.token);
-      navigate("/dashboard");
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Login error:", error);
       // Handle error (show message to user)
