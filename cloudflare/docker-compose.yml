@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel_project
+    network_mode: host
+    restart: unless-stopped
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - /home/hqnw/compose/cloudflare_project/.cloudflared:/etc/cloudflared:ro
+    environment:
+      - TUNNEL_ORIGIN_CERT=/etc/cloudflared/cert.pem

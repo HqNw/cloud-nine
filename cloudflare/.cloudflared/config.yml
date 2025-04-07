@@ -1,0 +1,22 @@
+tunnel: c2-tunnel
+credentials-file: /etc/cloudflared/c2-tunnel_credentials.json
+origincert: /etc/cloudflared/cert.pem
+
+# Increased log level for debugging
+loglevel: info
+
+ingress:
+  - hostname: cloud.hqnw.live
+    service: https://nginx:443
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      disableChunkedEncoding: true
+  - service: http_status:404
+
+# Set metrics endpoint
+metrics: 0.0.0.0:2000
+
+# Retry settings
+retries: 5
+protocol: auto
